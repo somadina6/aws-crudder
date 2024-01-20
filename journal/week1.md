@@ -8,5 +8,8 @@
 ## Key Takeaways
 * Debugging process of setting up Environment Variables
 * Familiar with tags such as '-i', '-d' and '-t' in docker build & docker run
-`docker build -t tagname /DockerfileDirectory`<br />
+
+### Code  
+`docker build -t tagname /DockerfileDirectory`
+
 `docker run -it dockername`
