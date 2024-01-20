@@ -10,6 +10,6 @@
 * Familiar with tags such as '-i', '-d' and '-t' in docker build & docker run
 
 ### Code  
-`docker build -t tagname /DockerfileDirectory`
+`docker build -t tagname </DockerfileDirectory>`
 
-`docker run -it dockername`
+`docker run -it <dockername>`
