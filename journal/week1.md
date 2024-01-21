@@ -22,5 +22,23 @@ docker run --rm -p 4567:4567 -it -e FRONTEND_URL='*' -e BACKEND_URL='*' backend-
 ```
 
 
-## Created Dockerfile - FrontEnd
+## Pushing & Tagging An Image To DockerHub
+* Created a public repo on DockerHub
+* Login to Docker via CLI:
+```
+docker login --username=somadina6
+```
+
+* Tag the local image with repo:tagname:
+```
+docker tag local-mage:tagname repo:tagname
+docker tag aws-crudder-backend-flask:latest somadina6/crudder-aws:backend-flask
+docker tag aws-crudder-frontend-react-js:latest somadina6/crudder-aws:frontend-react
+```
+
+* Push the images to the DockerHub repo:
+```
+docker push somadina6/crudder-aws:backend-flask 
+docker push somadina6/crudder-aws:frontend-react 
+```
 
