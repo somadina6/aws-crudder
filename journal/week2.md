@@ -1,1 +1,1 @@
-# Week 2 — Distributed Tracing
+# 2 — Distributed Tracing
