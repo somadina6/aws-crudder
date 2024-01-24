@@ -1,9 +1,15 @@
 FROM node:16.18
 
-ENV PORT=3000
-COPY . /frontend-react-js
 WORKDIR /frontend-react-js
 
-RUN npm install
+COPY package*.json .
+
+RUN npm install --no-audit --no-fund
+
+COPY . .
+
+ENV PORT=3000
+
 EXPOSE ${PORT}
+
 CMD ["npm", "start"]
