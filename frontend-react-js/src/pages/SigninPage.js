@@ -15,9 +15,12 @@ export default function SigninPage() {
   const onsubmit = async (event) => {
     event.preventDefault();
     setCognitoErrors("");
-    console.log("SOMA");
     try {
-      const user = await signIn(email, password);
+      console.log("Attempting to Sign In using AWS Coginito");
+      console.log("email", email);
+      console.log("password", password);
+      const user = await signIn({ username: email, password });
+      console.log("Cognito Sign Success");
 
       localStorage.setItem(
         "access_token",
