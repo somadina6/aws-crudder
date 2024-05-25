@@ -38,9 +38,9 @@ xray_recorder.configure(service='backend-flask', dynamic_naming=xray_url)
 
 
 # Initialize tracing and an exporter that can send data to Honeycomb
-provider = TracerProvider()
-processor = BatchSpanProcessor(OTLPSpanExporter())
-provider.add_span_processor(processor)
+# provider = TracerProvider()
+# processor = BatchSpanProcessor(OTLPSpanExporter())
+# provider.add_span_processor(processor)
 
 
 
@@ -48,8 +48,8 @@ provider.add_span_processor(processor)
 # processor2 = SimpleSpanProcessor(ConsoleSpanExporter())
 # provider.add_span_processor(processor2)
 
-trace.set_tracer_provider(provider)
-tracer = trace.get_tracer(__name__)
+# trace.set_tracer_provider(provider)
+# tracer = trace.get_tracer(__name__)
 
 app = Flask(__name__)
 XRayMiddleware(app, xray_recorder)
@@ -81,11 +81,20 @@ frontend = os.getenv('FRONTEND_URL')
 backend = os.getenv('BACKEND_URL')
 print(frontend) #print
 origins = [frontend, backend]
+
+# cors = CORS(
+#   app, 
+#   resources={r"/api/*": {"origins": origins}},
+#   expose_headers="location,link",
+#   allow_headers="content-type,if-modified-since",
+#   methods="OPTIONS,GET,HEAD,POST"
+# )
+
 cors = CORS(
   app, 
   resources={r"/api/*": {"origins": origins}},
-  expose_headers="location,link",
-  allow_headers="content-type,if-modified-since",
+  headers=['Content-Type', 'Authorization'], 
+  expose_headers='Authorization',
   methods="OPTIONS,GET,HEAD,POST"
 )
 
@@ -132,8 +141,11 @@ def data_create_message():
     return model['data'], 200
   return
 
+# Home Activities Endpoint
 @app.route("/api/activities/home", methods=['GET'])
 def data_home():
+  app.logger.info('AUTH HEADER---')
+  app.logger.info(request.headers.get('Authorization'))
   data = HomeActivities.run()
   return data, 200
 

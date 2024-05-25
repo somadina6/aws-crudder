@@ -9,9 +9,6 @@ import ActivityFeed from "../components/ActivityFeed";
 import ActivityForm from "../components/ActivityForm";
 import ReplyForm from "../components/ReplyForm";
 
-// [TODO] Authenication
-import Cookies from "js-cookie";
-
 export default function HomeFeedPage() {
   const [activities, setActivities] = React.useState([]);
   const [popped, setPopped] = React.useState(false);
@@ -21,13 +18,15 @@ export default function HomeFeedPage() {
   const dataFetchedRef = React.useRef(false);
 
   const loadData = async () => {
-    const accessToken = localStorage.getItem("");
+    const { tokens } = await fetchAuthSession();
+    const accessToken = tokens.accessToken.toString();
+
     try {
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/home`;
       const res = await fetch(backend_url, {
         method: "GET",
         headers: {
-          Authorization: `Bearer`,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
       let resJson = await res.json();
@@ -43,7 +42,9 @@ export default function HomeFeedPage() {
 
   const checkAuth = async () => {
     const { userSub } = await fetchAuthSession();
+
     if (userSub) {
+      console.log(userSub);
       const { name, preferred_username } = await fetchUserAttributes();
       setUser({
         display_name: name,
@@ -54,10 +55,6 @@ export default function HomeFeedPage() {
   };
 
   React.useEffect(() => {
-    //prevents double call
-    // if (dataFetchedRef.current) return;
-    // dataFetchedRef.current = true;
-
     loadData();
     checkAuth();
   }, []);
