@@ -1,18 +1,16 @@
 import "./ConfirmationPage.css";
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { ReactComponent as Logo } from "../components/svg/logo.svg";
 
-// [TODO] Authenication
-import Cookies from "js-cookie";
-
-import { resendSignUpCode } from "aws-amplify/auth";
+import { resendSignUpCode, confirmSignUp } from "aws-amplify/auth";
 
 export default function ConfirmationPage() {
   const [email, setEmail] = React.useState("");
   const [code, setCode] = React.useState("");
-  const [errors, setErrors] = React.useState("");
+  const [errors, setCognitoErrors] = React.useState("");
   const [codeSent, setCodeSent] = React.useState(false);
+  const [emailDest, setEmailDest] = React.useState("");
 
   const params = useParams();
 
@@ -26,8 +24,13 @@ export default function ConfirmationPage() {
   const resend_code = async (event) => {
     setCognitoErrors("");
     try {
-      const { destination } = await resendSignUpCode({ username: email });
-      console.log("code resent successfully to", destination);
+      const { destination, deliveryMedium, attributeName } =
+        await resendSignUpCode({ username: email });
+
+      if (destination) setEmailDest(destination);
+
+      console.log("deliveryMedium", deliveryMedium);
+      console.log("attributeName", attributeName);
       setCodeSent(true);
     } catch (err) {
       // does not return a code
@@ -41,32 +44,26 @@ export default function ConfirmationPage() {
       } else if (err.message == "Username/client id combination not found.") {
         setCognitoErrors("Email is invalid or cannot be found.");
       }
+      setCognitoErrors(err.message);
     }
   };
 
   const onsubmit = async (event) => {
     event.preventDefault();
-    console.log("ConfirmationPage.onsubmit");
-    // [TODO] Authenication
-    if (
-      Cookies.get("user.email") === undefined ||
-      Cookies.get("user.email") === "" ||
-      Cookies.get("user.email") === null
-    ) {
-      setErrors(
-        "You need to provide an email in order to send Resend Activiation Code"
-      );
-    } else {
-      if (Cookies.get("user.email") === email) {
-        if (Cookies.get("user.confirmation_code") === code) {
-          Cookies.set("user.logged_in", true);
-          window.location.href = "/";
-        } else {
-          setErrors("Code is not valid");
-        }
-      } else {
-        setErrors("Email is invalid or cannot be found.");
-      }
+    setCognitoErrors("");
+
+    try {
+      const { isSignUpComplete, nextStep } = await confirmSignUp({
+        username: email,
+        confirmationCode: code,
+      });
+
+      console.log("isSignUpComplete", isSignUpComplete);
+      console.log("nextStep", nextStep);
+
+      if (isSignUpComplete) window.location.href = "/";
+    } catch (error) {
+      setCognitoErrors(error.message);
     }
     return false;
   };
@@ -80,7 +77,7 @@ export default function ConfirmationPage() {
   if (codeSent) {
     code_button = (
       <div className="sent-message">
-        A new activation code has been sent to your email
+        A new activation code has been sent to {emailDest}
       </div>
     );
   } else {
@@ -95,7 +92,7 @@ export default function ConfirmationPage() {
     if (params.email) {
       setEmail(params.email);
     }
-  }, []);
+  });
 
   return (
     <article className="confirm-article">

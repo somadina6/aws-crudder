@@ -21,10 +21,14 @@ export default function HomeFeedPage() {
   const dataFetchedRef = React.useRef(false);
 
   const loadData = async () => {
+    const accessToken = localStorage.getItem("");
     try {
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/home`;
       const res = await fetch(backend_url, {
         method: "GET",
+        headers: {
+          Authorization: `Bearer`,
+        },
       });
       let resJson = await res.json();
       if (res.status === 200) {
