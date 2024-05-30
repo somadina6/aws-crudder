@@ -1,7 +1,9 @@
 from flask import Flask
-from flask import request
+from flask import request,abort
 from flask_cors import CORS, cross_origin
 import os
+
+from lib.cognito_jwt_token import CognitoJwtToken,TokenVerifyError
 
 from services.home_activities import *
 from services.notifications_activities import *
@@ -37,12 +39,11 @@ xray_url = os.getenv("AWS_XRAY_URL")
 xray_recorder.configure(service='backend-flask', dynamic_naming=xray_url)
 
 
+
 # Initialize tracing and an exporter that can send data to Honeycomb
 # provider = TracerProvider()
 # processor = BatchSpanProcessor(OTLPSpanExporter())
 # provider.add_span_processor(processor)
-
-
 
 # Show the logs within backend
 # processor2 = SimpleSpanProcessor(ConsoleSpanExporter())
@@ -53,6 +54,12 @@ xray_recorder.configure(service='backend-flask', dynamic_naming=xray_url)
 
 app = Flask(__name__)
 XRayMiddleware(app, xray_recorder)
+
+cognito_token_veri = CognitoJwtToken(
+  user_pool_id=os.getenv('AWS_COGNITO_USER_POOL_ID'),
+  region=os.getenv('AWS_DEFAULT_REGION'),
+  user_pool_client_id=os.getenv('AWS_COGNITO_USER_POOL_CLIENT_ID'))
+
 
 # Rollbar Init
 # rollbar_access_token = os.getenv('ROLLBAR_ACCESS_TOKEN')
@@ -82,13 +89,6 @@ backend = os.getenv('BACKEND_URL')
 print(frontend) #print
 origins = [frontend, backend]
 
-# cors = CORS(
-#   app, 
-#   resources={r"/api/*": {"origins": origins}},
-#   expose_headers="location,link",
-#   allow_headers="content-type,if-modified-since",
-#   methods="OPTIONS,GET,HEAD,POST"
-# )
 
 cors = CORS(
   app, 
@@ -143,10 +143,22 @@ def data_create_message():
 
 # Home Activities Endpoint
 @app.route("/api/activities/home", methods=['GET'])
+@xray_recorder.capture('activities_home')
 def data_home():
-  app.logger.info('AUTH HEADER---')
-  app.logger.info(request.headers.get('Authorization'))
-  data = HomeActivities.run()
+  access_token = CognitoJwtToken.extract_access_token(request.headers)
+
+  try:
+    claims = cognito_token_veri.verify(access_token)
+    app.logger.info('claims')
+    app.logger.info(claims)
+    app.logger.info(claims['username'])
+  except TokenVerifyError as e:
+    _ = request.data
+    app.logger.info(e)
+    # abort(403)
+
+
+  data = HomeActivities.run(claims['username'])
   return data, 200
 
 # Notifications
@@ -173,7 +185,7 @@ def data_search():
     return model['data'], 200
   return
 
-@app.route("/api/activities", methods=['POST','OPTIONS'])
+@app.route("/api/activities", methods=['POST'])
 @cross_origin()
 def data_activities():
   user_handle  = 'andrewbrown'

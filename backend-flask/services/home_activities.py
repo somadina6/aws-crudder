@@ -4,7 +4,7 @@ from opentelemetry import trace
 tracer = trace.get_tracer('home.activities')
 
 class HomeActivities:
-  def run():
+  def run(username=None):
     with tracer.start_as_current_span("mock-data"):
       now = datetime.now(timezone.utc).astimezone()
       results = [{
@@ -46,4 +46,15 @@ class HomeActivities:
         'replies': []
       }
       ]
+      if username != None:
+        secret = {
+        'uuid': '248959df-3079-4947-b847-9e0892d1bab4',
+        'handle':  'Somadina Eze',
+        'message': 'I am authenticated YOLO',
+        'created_at': (now - timedelta(hours=1)).isoformat(),
+        'expires_at': (now + timedelta(hours=12)).isoformat(),
+        'likes': 0,
+        'replies': []
+      }
+        results.insert(0,secret)
       return results
