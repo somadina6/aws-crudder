@@ -67,7 +67,7 @@ rollbar_access_token = "eb997e444065416096636c559a1ecd48"
 
 with app.app_context():
     """init rollbar module"""
-    print('SOMA')
+    
     rollbar.init(
         # access token
         rollbar_access_token,
@@ -149,9 +149,9 @@ def data_home():
 
   try:
     claims = cognito_token_veri.verify(access_token)
-    app.logger.info('claims')
-    app.logger.info(claims)
-    app.logger.info(claims['username'])
+    # app.logger.info('claims')
+    # app.logger.info(claims)
+    # app.logger.info(claims['username'])
   except TokenVerifyError as e:
     _ = request.data
     app.logger.info(e)
@@ -159,6 +159,7 @@ def data_home():
 
 
   data = HomeActivities.run(claims['username'])
+  # app.logger.info(data)
   return data, 200
 
 # Notifications
