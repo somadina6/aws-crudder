@@ -8,6 +8,11 @@ tasks:
       unzip awscliv2.zip
       sudo ./aws/install
       cd $THEIA_WORKSPACE_ROOT
+    command: |
+      export GITPOD_IP=$(curl ifconfig.me)
+      aws ec2 modify-security-group-rules \
+      --group-id $DB_SG_ID \
+      --security-group-rules "SecurityGroupRuleId=$DB_SG_RULE_ID,SecurityGroupRule={Description=GITPOD,IpProtocol=tcp,FromPort=5432,ToPort=5432,CidrIpv4=$GITPOD_IP/32}"
 
   - name: postgres
     init: |
@@ -21,7 +26,7 @@ tasks:
       cd frontend-react-js
       npm i
       export GITPOD_IP=$(curl ifconfig.me)
-      source  "$THEIA_WORKSPACE_ROOT/backend-flask/bin/rds-update-sg-rule"
+      source  "$THEIA_WORKSPACE_ROOT/backend-flask/bin/rds-update-sg-rule.sh"
 vscode:
   extensions:
     - 42Crunch.vscode-openapi

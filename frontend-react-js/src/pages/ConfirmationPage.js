@@ -2,7 +2,7 @@ import "./ConfirmationPage.css";
 import React from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { ReactComponent as Logo } from "../components/svg/logo.svg";
-
+import { useLocation } from "react-router-dom";
 import { resendSignUpCode, confirmSignUp } from "aws-amplify/auth";
 
 export default function ConfirmationPage() {
@@ -88,11 +88,15 @@ export default function ConfirmationPage() {
     );
   }
 
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+
   React.useEffect(() => {
-    if (params.email) {
-      setEmail(params.email);
+    const myemail = queryParams.get("email");
+    if (myemail) {
+      setEmail(myemail);
     }
-  });
+  }, []);
 
   return (
     <article className="confirm-article">
