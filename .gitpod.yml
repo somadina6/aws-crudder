@@ -2,20 +2,20 @@ tasks:
   - name: aws-cli
     env:
       AWS_CLI_AUTO_PROMPT: on-partial
-    init: |
+    command: |
       cd /workspace
       curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
       unzip awscliv2.zip
       sudo ./aws/install
-      cd $THEIA_WORKSPACE_ROOT
-    command: |
+      cd $THEIA_WORKSPACE_ROOT;
       export GITPOD_IP=$(curl ifconfig.me)
       aws ec2 modify-security-group-rules \
       --group-id $DB_SG_ID \
-      --security-group-rules "SecurityGroupRuleId=$DB_SG_RULE_ID,SecurityGroupRule={Description=GITPOD,IpProtocol=tcp,FromPort=5432,ToPort=5432,CidrIpv4=$GITPOD_IP/32}"
+      --security-group-rules "SecurityGroupRuleId=$DB_SG_RULE_ID,SecurityGroupRule={Description=GITPOD,IpProtocol=tcp,FromPort=5432,ToPort=5432,CidrIpv4=$GITPOD_IP/32}";
+      cd /workspace
 
   - name: postgres
-    init: |
+    command: |
       curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc|sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
       echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" |sudo tee  /etc/apt/sources.list.d/pgdg.list
       sudo apt update
@@ -25,8 +25,7 @@ tasks:
     command: |
       cd frontend-react-js
       npm i
-      export GITPOD_IP=$(curl ifconfig.me)
-      source  "$THEIA_WORKSPACE_ROOT/backend-flask/bin/rds-update-sg-rule.sh"
+
 vscode:
   extensions:
     - 42Crunch.vscode-openapi

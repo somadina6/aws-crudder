@@ -1,0 +1,4 @@
+\d
+select * from users;
+select * from activities ;
+\s auto

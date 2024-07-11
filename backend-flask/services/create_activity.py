@@ -1,11 +1,18 @@
 import uuid
 from datetime import datetime, timedelta, timezone
+from lib.db import pool, query_wrap_array,query_wrap_object
+
 class CreateActivity:
+  def validations():
+    pass
+
   def run(message, user_handle, ttl):
     model = {
       'errors': None,
       'data': None
     }
+    user_uuid = ''
+    
 
     now = datetime.now(timezone.utc).astimezone()
 
@@ -49,3 +56,29 @@ class CreateActivity:
         'expires_at': (now + ttl_offset).isoformat()
       }
     return model
+
+  def create_activity(user_uuid,message,expires_at):
+
+    sql = f'''
+      INSERT INTO activities
+      (user_uuid, message,  expires_at)
+      VALUES("{user_uuid}", "{message}", "{expires_at}")
+    '''
+    try:
+      with pool.connection() as conn:
+        with conn.cursor() as cur:
+          cur.execute(sql)
+          conn.commit() 
+
+    except Exception as err:
+      print(err)
+      conn.rollback()
+
+    finally:
+       if conn is not None:
+            cur.close()
+            conn.close()
+            print('Database connection closed.')
+
+    
+  
