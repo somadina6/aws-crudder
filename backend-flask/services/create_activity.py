@@ -1,12 +1,12 @@
 import uuid
 from datetime import datetime, timedelta, timezone
-from lib.db import pool, query_wrap_array,query_wrap_object
+from lib.db import db
 
 class CreateActivity:
   def validations():
     pass
 
-  def run(message, user_handle, ttl):
+  def run(self,message, user_handle, ttl):
     model = {
       'errors': None,
       'data': None
@@ -47,38 +47,49 @@ class CreateActivity:
         'message': message
       }   
     else:
-      model['data'] = {
-        'uuid': uuid.uuid4(),
-        'display_name': 'Andrew Brown',
-        'handle':  user_handle,
-        'message': message,
-        'created_at': now.isoformat(),
-        'expires_at': (now + ttl_offset).isoformat()
-      }
+      expires_at = (now + ttl_offset)
+      uuid_returned = self.create_activity(user_handle,message,expires_at)
+      model['data'] = self.query_object_activity(uuid_returned)
     return model
 
-  def create_activity(user_uuid,message,expires_at):
+
+
+  def create_activity(self,handle,message,expires_at):
 
     sql = f'''
-      INSERT INTO activities
-      (user_uuid, message,  expires_at)
-      VALUES("{user_uuid}", "{message}", "{expires_at}")
+      INSERT INTO public.activities (user_uuid, message, expires_at)
+      VALUES(
+      (SELECT uuid FROM public.users WHERE users.handle = %(handle)s LIMIT 1),
+      %(message)s, 
+      %(expires_at)s)
+      RETURNING uuid;
     '''
-    try:
-      with pool.connection() as conn:
-        with conn.cursor() as cur:
-          cur.execute(sql)
-          conn.commit() 
 
-    except Exception as err:
-      print(err)
-      conn.rollback()
+    uuid = db.query_commit(sql, 
+    {"handle":handle, 
+    "message":message,
+    "expires_at":expires_at})
 
-    finally:
-       if conn is not None:
-            cur.close()
-            conn.close()
-            print('Database connection closed.')
+    return uuid
+
+
+  def query_object_activity(self,uuid_returned):
+    sql =  f'''
+    SELECT 
+      a.uuid,
+      u.display_name,
+      u.handle,
+      a.message,
+      a.created_at,
+      a.expires_at 
+    FROM public.activities as a
+    INNER JOIN public.users as u ON a.user_uuid = u.uuid
+    WHERE a.uuid = %(uuid_returned)s
+    '''
+
+    result = db.query_object_json(sql,{'uuid_returned':uuid_returned})
+    return result
+    
 
     
   

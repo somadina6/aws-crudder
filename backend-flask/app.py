@@ -149,9 +149,9 @@ def data_home():
 
   try:
     claims = cognito_token_veri.verify(access_token)
-    # app.logger.info('claims')
-    # app.logger.info(claims)
-    # app.logger.info(claims['username'])
+    app.logger.info('claims')
+    app.logger.info(claims)
+    app.logger.info(claims['username'])
   except TokenVerifyError as e:
     _ = request.data
     app.logger.info(e)
@@ -189,15 +189,29 @@ def data_search():
 @app.route("/api/activities", methods=['POST'])
 @cross_origin()
 def data_activities():
-  user_handle  = 'andrewbrown'
+  access_token = CognitoJwtToken.extract_access_token(request.headers)
+
+  try:
+    claims = cognito_token_veri.verify(access_token)
+    app.logger.info('claims')
+    app.logger.info(claims)
+    user_handle = claims['username']
+  except TokenVerifyError as e:
+    _ = request.data
+    app.logger.info(e)
+
   message = request.json['message']
+  user_handle = 'somadina600'
+
   ttl = request.json['ttl']
-  model = CreateActivity.run(message, user_handle, ttl)
+  create_activity = CreateActivity()
+  
+  model = create_activity.run(message, user_handle, ttl)
   if model['errors'] is not None:
     return model['errors'], 422
   else:
     return model['data'], 200
-  return
+  
 
 @app.route("/api/activities/<string:activity_uuid>", methods=['GET'])
 def data_show_activity(activity_uuid):

@@ -1,13 +1,13 @@
 from datetime import datetime, timedelta, timezone
 from opentelemetry import trace
 
-from lib.db import pool, query_wrap_array,query_wrap_object
+from lib.db import db
 
 tracer = trace.get_tracer('home.activities')
 
 class HomeActivities:
   def run(username=None):
-    sql = query_wrap_array("""
+    sql = """
       SELECT
         activities.uuid,
         users.display_name,
@@ -22,15 +22,7 @@ class HomeActivities:
       FROM public.activities
       LEFT JOIN public.users ON users.uuid = activities.user_uuid
       ORDER BY activities.created_at DESC
-      """)
-    print(sql)
+      """  
+    results = db.query_array_json(sql)
 
-    print("-------------------------SQL----------------------------",flush=True)
-    with pool.connection() as conn:
-      with conn.cursor() as cur:
-        cur.execute(sql)
-        rows = cur.fetchone()
-        print(rows[0],flush=True)
-        results = rows
-
-    return results[0]
+    return results
