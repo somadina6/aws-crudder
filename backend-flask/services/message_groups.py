@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 class MessageGroups:
-  def run(user_handle):
+  def run(self,user_handle):
+    print(user_handle)
     model = {
       'errors': None,
       'data': None

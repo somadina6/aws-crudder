@@ -3,14 +3,7 @@ import React from "react";
 import { ReactComponent as Logo } from "../components/svg/logo.svg";
 import { Link } from "react-router-dom";
 
-// [TODO] Authenication
-import Cookies from "js-cookie";
-import {
-  signIn,
-  getCurrentUser,
-  fetchAuthSession,
-  fetchUserAttributes,
-} from "aws-amplify/auth";
+import { signIn, getCurrentUser, fetchAuthSession } from "aws-amplify/auth";
 
 export default function SigninPage() {
   const [email, setEmail] = React.useState("");
@@ -30,16 +23,13 @@ export default function SigninPage() {
       console.log("Attempting to Sign In using AWS Coginito");
       console.log("email", email);
       console.log("password", password);
-      const user = await signIn({ username: email, password });
+      await signIn({ username: email, password });
       console.log("Cognito Sign Success");
       const { userId, username, signInDetails } = await getCurrentUser();
       console.log("userId", userId);
       console.log("username", username);
       console.log("signInDetails", signInDetails);
-      // localStorage.setItem(
-      //   "access_token",
-      //   user.signInUserSession.accessToken.jwtToken
-      // );
+
       window.location.href = "/";
     } catch (error) {
       console.log("Error!", error);

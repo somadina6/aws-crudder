@@ -15,7 +15,6 @@ export default function HomeFeedPage() {
   const [poppedReply, setPoppedReply] = React.useState(false);
   const [replyActivity, setReplyActivity] = React.useState({});
   const [user, setUser] = React.useState(null);
-  const dataFetchedRef = React.useRef(false);
 
   const loadData = async () => {
     const { tokens } = await fetchAuthSession();
@@ -41,17 +40,20 @@ export default function HomeFeedPage() {
   };
 
   const checkAuth = async () => {
-    const { userSub } = await fetchAuthSession();
-
-    if (userSub) {
-      console.log(userSub);
-      const { name, preferred_username } = await fetchUserAttributes();
-      setUser({
-        display_name: name,
-        handle: preferred_username,
-      });
-    }
     console.log("checkAuth");
+    try {
+      const { userSub } = await fetchAuthSession();
+
+      if (userSub) {
+        const { name, preferred_username } = await fetchUserAttributes();
+        setUser({
+          display_name: name,
+          handle: preferred_username,
+        });
+      }
+    } catch (error) {
+      console.log("Error:", error);
+    }
   };
 
   React.useEffect(() => {

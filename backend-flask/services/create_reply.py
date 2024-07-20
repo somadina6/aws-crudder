@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timedelta, timezone
 class CreateReply:
-  def run(message, user_handle, activity_uuid):
+  def run(self, message, user_handle, activity_uuid):
     model = {
       'errors': None,
       'data': None

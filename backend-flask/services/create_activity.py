@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from lib.db import db
 
 class CreateActivity:
-  def validations():
+  def validations(self):
     pass
 
   def run(self,message, user_handle, ttl):
@@ -11,9 +11,7 @@ class CreateActivity:
       'errors': None,
       'data': None
     }
-    user_uuid = ''
-    
-
+  
     now = datetime.now(timezone.utc).astimezone()
 
     if (ttl == '30-days'):
@@ -49,6 +47,7 @@ class CreateActivity:
     else:
       expires_at = (now + ttl_offset)
       uuid_returned = self.create_activity(user_handle,message,expires_at)
+      print('uuid returned:', uuid_returned, flush=True)
       model['data'] = self.query_object_activity(uuid_returned)
     return model
 
@@ -56,14 +55,7 @@ class CreateActivity:
 
   def create_activity(self,handle,message,expires_at):
 
-    sql = f'''
-      INSERT INTO public.activities (user_uuid, message, expires_at)
-      VALUES(
-      (SELECT uuid FROM public.users WHERE users.handle = %(handle)s LIMIT 1),
-      %(message)s, 
-      %(expires_at)s)
-      RETURNING uuid;
-    '''
+    sql = db.template('activities','create')
 
     uuid = db.query_commit(sql, 
     {"handle":handle, 
@@ -74,20 +66,10 @@ class CreateActivity:
 
 
   def query_object_activity(self,uuid_returned):
-    sql =  f'''
-    SELECT 
-      a.uuid,
-      u.display_name,
-      u.handle,
-      a.message,
-      a.created_at,
-      a.expires_at 
-    FROM public.activities as a
-    INNER JOIN public.users as u ON a.user_uuid = u.uuid
-    WHERE a.uuid = %(uuid_returned)s
-    '''
 
-    result = db.query_object_json(sql,{'uuid_returned':uuid_returned})
+    sql = db.template('activities','object')
+
+    result = db.query_object_json(sql,{'uuid':uuid_returned})
     return result
     
 

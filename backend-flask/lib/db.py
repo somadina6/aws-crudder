@@ -9,8 +9,20 @@ class Db:
         self.init_pool()
     
     def template(self,*args):
-        pass
-    
+        pathing = list((app.root_path,'db','sql',) + args)
+        pathing[-1] = pathing[-1] + ".sql"
+
+        template_path = os.path.join(*pathing)
+
+        green = '\033[92m'
+        no_color = '\033[0m'
+        print("\n")
+        print(f'{green} Load SQL Template: {template_path} {no_color}')
+
+        with open(template_path, 'r') as f:
+            template_content = f.read()
+        return template_content
+
     def print_sql(self,sql,title='LOGGER PRINT'):
         cyan ='\033[96m'
         no_color = '\033[0m'
@@ -21,34 +33,28 @@ class Db:
         connection_url = os.getenv("CONNECTION_URL")
         self.pool = ConnectionPool(connection_url) 
 
-    def query_commit(self, sql, params={}):  
+    def query_commit(self,sql,params={},verbose=True):
+        if verbose:
+            self.print_sql(title='commit with returning',sql=sql)
+
         pattern = r"\bRETURNING\b"
-        is_returning_id = re.search(pattern=pattern,string=sql)
-        self.print_sql(sql,'SQL')
- 
+        is_returning_id = re.search(pattern, sql)
+
         try:
             with self.pool.connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute(sql, params)
-                    if is_returning_id:
-                        returning_id = cur.fetchone()[0]
-                        # conn.commit()
-                        self.print_sql(title='returning_id',sql=returning_id)
-                    
-                    else:
-                         cur.fetchone()[0]
-        
-        
+                cur =  conn.cursor()
+                cur.execute(sql,params)
+                if is_returning_id:
+                    returning_id = cur.fetchone()[0]
+                conn.commit() 
+                if is_returning_id:
+                    return returning_id
         except Exception as err:
-            # self.print_sql_err(err)
-            self.print_sql(err,title='Error query commit:')
-
-        return returning_id
+            print(err)
 
     def query_array_json(self,sql_input,params={}):
         sql = self.query_wrap_array(sql_input)
-        self.print_sql(sql)
-        self.print_sql(params)
+      
         with self.pool.connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(sql,params)
@@ -88,21 +94,5 @@ class Db:
         """
         return sql
 
-    def print_sql_err(self,err):
-        # get details about the exception
-        err_type, err_obj, traceback = sys.exc_info()
-
-        # get the line number when exception occured
-        line_num = traceback.tb_lineno
-
-        # print the connect() error
-        print ("\npsycopg ERROR:", err, "on line number:", line_num)
-        print ("psycopg traceback:", traceback, "-- type:", err_type)
-
-        # print the pgcode and pgerror exceptions
-        if err.pgerror:
-             print ("pgerror:", err.pgerror)
-        if err.pgcode:
-            print ("pgcode:", err.pgcode, "\n")
 
 db = Db()

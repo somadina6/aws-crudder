@@ -49,9 +49,6 @@ xray_recorder.configure(service='backend-flask', dynamic_naming=xray_url)
 # processor2 = SimpleSpanProcessor(ConsoleSpanExporter())
 # provider.add_span_processor(processor2)
 
-# trace.set_tracer_provider(provider)
-# tracer = trace.get_tracer(__name__)
-
 app = Flask(__name__)
 XRayMiddleware(app, xray_recorder)
 
@@ -62,8 +59,8 @@ cognito_token_veri = CognitoJwtToken(
 
 
 # Rollbar Init
-# rollbar_access_token = os.getenv('ROLLBAR_ACCESS_TOKEN')
-rollbar_access_token = "eb997e444065416096636c559a1ecd48"
+rollbar_access_token = os.getenv('ROLLBAR_ACCESS_TOKEN')
+
 
 with app.app_context():
     """init rollbar module"""
@@ -125,7 +122,7 @@ def data_messages(handle):
     return model['errors'], 422
   else:
     return model['data'], 200
-  return
+  
 
 @app.route("/api/messages", methods=['POST','OPTIONS'])
 @cross_origin()
@@ -139,7 +136,7 @@ def data_create_message():
     return model['errors'], 422
   else:
     return model['data'], 200
-  return
+  
 
 # Home Activities Endpoint
 @app.route("/api/activities/home", methods=['GET'])
@@ -184,7 +181,7 @@ def data_search():
     return model['errors'], 422
   else:
     return model['data'], 200
-  return
+  
 
 @app.route("/api/activities", methods=['POST'])
 @cross_origin()
@@ -228,7 +225,7 @@ def data_activities_reply(activity_uuid):
     return model['errors'], 422
   else:
     return model['data'], 200
-  return
+  
 
 if __name__ == "__main__":
   app.run(debug=True)

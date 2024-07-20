@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 class Messages:
-  def run(user_sender_handle, user_receiver_handle):
+  def run(self,user_sender_handle, user_receiver_handle):
+    print(user_receiver_handle,user_sender_handle)
     model = {
       'errors': None,
       'data': None

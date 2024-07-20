@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 class SearchActivities:
-  def run(search_term):
+  def run(self,search_term):
     model = {
       'errors': None,
       'data': None

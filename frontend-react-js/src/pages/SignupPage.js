@@ -16,7 +16,6 @@ export default function SignupPage() {
   const onsubmit = async (event) => {
     event.preventDefault();
     console.log("SignupPage.onsubmit");
-    // [TODO] Authenication
     try {
       const { isSignUpComplete, nextStep, userId } = await signUp({
         username,

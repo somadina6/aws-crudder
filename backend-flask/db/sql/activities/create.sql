@@ -1,11 +1,14 @@
-SELECT 
-    a.uuid,
-    u.display_name,
-    u.handle,
-    a.message,
-    a.created_at,
-    a.expires_at 
-FROM public.activities as a
-INNER JOIN public.users as u ON a.user_uuid = u.uuid
-WHERE 
-    a.uuid = %(uuid_returned)s
+INSERT INTO public.activities (
+  user_uuid,
+  message,
+  expires_at
+)
+VALUES (
+  (SELECT uuid 
+    FROM public.users 
+    WHERE users.handle = %(handle)s
+    LIMIT 1
+  ),
+  %(message)s,
+  %(expires_at)s
+) RETURNING uuid;

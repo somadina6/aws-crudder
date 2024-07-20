@@ -1,14 +1,9 @@
-import "./UserFeedPage.css";
 import React from "react";
 import { useParams } from "react-router-dom";
-
 import DesktopNavigation from "../components/DesktopNavigation";
 import DesktopSidebar from "../components/DesktopSidebar";
 import ActivityFeed from "../components/ActivityFeed";
 import ActivityForm from "../components/ActivityForm";
-
-// [TODO] Authenication
-import Cookies from "js-cookie";
 import { Auth } from "aws-amplify";
 import { getCurrentUser } from "aws-amplify/auth";
 
@@ -44,10 +39,6 @@ export default function UserFeedPage() {
     console.log("userId:", userId);
     console.log("username:", username);
 
-    // setUser({
-    //   display_name: username,
-    //   handle: username,
-    // });
     Auth.currentAuthenticatedUser({
       // Optional, By default is false.
       // If set to true, this call will send a
