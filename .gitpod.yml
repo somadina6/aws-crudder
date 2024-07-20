@@ -7,11 +7,8 @@ tasks:
       curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
       unzip awscliv2.zip
       sudo ./aws/install
-      rm -rf awscliv2.zip aws
-
-  - name: update secuirity group for aws postgres
-    command: |
-      cd $THEIA_WORKSPACE_ROOT;
+      rm -rf awscliv2.zip aws;
+      cd $THEIA_WORKSPACE_ROOT
       export GITPOD_IP=$(curl ifconfig.me)
       aws ec2 modify-security-group-rules \
       --group-id $DB_SG_ID \
