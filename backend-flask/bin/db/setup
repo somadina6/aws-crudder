@@ -1,0 +1,15 @@
+#! /usr/bin/bash
+-e # stop if it fails at any point
+
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="db-setup"
+printf "${CYAN}==== ${LABEL}${NO_COLOR}\n"
+
+bin_path="$(realpath .)/bin/db"
+
+source "$bin_path/drop.sh"
+source "$bin_path/create.sh"
+source "$bin_path/schema-load.sh"
+source "$bin_path/seed.sh"
+source "$bin_path/update_cognito_user_ids"
