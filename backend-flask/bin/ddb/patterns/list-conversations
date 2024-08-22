@@ -20,7 +20,7 @@ if len(sys.argv) == 2:
     attrs = {}
 
 dynamodb = boto3.client('dynamodb',**attrs)
-table_name = 'cruddur-messages'
+table_name = 'cruddur_messages'
 
 current_year = datetime.datetime.now().year
 
@@ -52,3 +52,5 @@ query_params = {
 }
 
 response = dynamodb.query(**query_params)
+
+print(json.dumps(response,sort_keys=True,indent=2))

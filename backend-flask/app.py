@@ -127,21 +127,35 @@ def data_message_groups():
 
   
 
-@app.route("/api/messages/@<string:handle>", methods=['GET'])
-def data_messages(handle):
-  user_sender_handle = 'andrewbrown'
-  user_receiver_handle = request.args.get('user_reciever_handle')
+@app.route("/api/messages/@<string:message_group_uuid>", methods=['GET'])
+def data_messages(message_group_uuid):
+  
+  access_token = CognitoJwtToken.extract_access_token(request.headers)
 
-  model = Messages.run(user_sender_handle=user_sender_handle, user_receiver_handle=user_receiver_handle)
-  if model['errors'] is not None:
-    return model['errors'], 422
-  else:
-    return model['data'], 200
+  try:
+    claims = cognito_token_veri.verify(access_token)
+    app.logger.debug('authenticated')
+    cognito_user_id = claims['sub']
+
+    model = Messages.run(
+      message_group_uuid=message_group_uuid,
+      cognito_user_id=cognito_user_id
+      )
+    if model['errors'] is not None:
+      return model['errors'], 422
+    else:
+      return model['data'], 200
+      
+  except TokenVerifyError as e:
+    _ = request.data
+    app.logger.info(e)
+    return {}, 401
   
 
 @app.route("/api/messages", methods=['POST','OPTIONS'])
 @cross_origin()
 def data_create_message():
+  print(request.json,flush=True)
   user_sender_handle = 'andrewbrown'
   user_receiver_handle = request.json['user_receiver_handle']
   message = request.json['message']

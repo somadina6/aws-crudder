@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
-import boto3, sys
+import boto3, sys, json
+
 
 attrs = {
   'endpoint_url': 'http://localhost:8000'
@@ -14,4 +15,5 @@ table_name = 'cruddur_messages'
 
 table = dynamodb.Table(table_name)
 response = table.scan()
-print(response)
+print(json.dumps(response,sort_keys=True,indent=2))
+

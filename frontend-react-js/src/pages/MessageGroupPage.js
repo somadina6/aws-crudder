@@ -43,10 +43,15 @@ export default function MessageGroupPage() {
 
   const loadMessageGroupData = async () => {
     try {
-      const handle = `@${params.handle}`;
-      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/messages/${handle}`;
+      const { tokens } = await fetchAuthSession();
+      if(!tokens) throw new Error('No token')
+      const accessToken = tokens.accessToken.toString();
+      const message_group_uuid = `@${params.message_group_uuid}`;
+      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/messages/${message_group_uuid}`;
       const res = await fetch(backend_url, {
-        method: "GET",
+        method: "GET", headers:{
+          Authorization: `Bearer ${accessToken}`
+        }
       });
       let resJson = await res.json();
       if (res.status === 200) {

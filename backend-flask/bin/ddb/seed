@@ -35,11 +35,11 @@ def get_user_uuids():
     """
 
   users = db.query_array_json(sql,{
-  'my_handle':  'andrewbrown',
+  'my_handle': 'somadina600',
   'other_handle': 'bayko'
   })
 
-  my_user    = next((item for item in users if item["handle"] == 'andrewbrown'), None)
+  my_user    = next((item for item in users if item["handle"] == 'somadina600'), None)
   other_user = next((item for item in users if item["handle"] == 'bayko'), None)
   results = {
     'my_user': my_user,
@@ -81,6 +81,12 @@ def create_message_group(client,message_group_uuid, my_user_uuid, last_message_a
     'user_display_name': {'S': other_user_display_name},
     'user_handle': {'S': other_user_handle}
   } 
+
+  response = client.put_item(
+    TableName=table_name,
+    Item=record
+  )
+  print(response)
 
 now = datetime.now(timezone.utc).astimezone()
 message_group_uuid = 'eewskddd-ddkdkdmd-ddmdkdkd'
