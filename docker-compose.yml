@@ -4,6 +4,7 @@ services:
     container_name: "backend-flask"
     environment:
       CONNECTION_URL: "${CONNECTION_URL}"
+      AWS_ENDPOINT_URL: "http://dynamodb-local:8000"
       FRONTEND_URL: "https://3000-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
       BACKEND_URL: "https://4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
       OTEL_SERVICE_NAME: "backend-flask"
@@ -16,8 +17,8 @@ services:
       AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
       ROLLBAR_ACCESS_TOKEN: "${ROLLBAR_ACCESS_TOKEN}"
       FLASK_DEBUG: 1
-      AWS_COGNITO_USER_POOL_ID: "ca-central-1_krsoIItDk"
-      AWS_COGNITO_USER_POOL_CLIENT_ID: "24tjraupvqt7p12vaijbdf96jn"
+      AWS_COGNITO_USER_POOL_ID: "${AWS_COGNITO_USER_POOL_ID}"
+      AWS_COGNITO_USER_POOL_CLIENT_ID: "${AWS_COGNITO_USER_POOL_CLIENT_ID}"
     build: ./backend-flask
     ports:
       - "4567:4567"

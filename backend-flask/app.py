@@ -1,5 +1,5 @@
 from flask import Flask
-from flask import request,abort
+from flask import request,abort,jsonify
 from flask_cors import CORS, cross_origin
 import os
 
@@ -50,6 +50,7 @@ xray_recorder.configure(service='backend-flask', dynamic_naming=xray_url)
 # provider.add_span_processor(processor2)
 
 app = Flask(__name__)
+
 XRayMiddleware(app, xray_recorder)
 
 cognito_token_veri = CognitoJwtToken(
@@ -87,7 +88,7 @@ print(frontend) #print
 origins = [frontend, backend]
 
 
-cors = CORS(
+CORS(
   app, 
   resources={r"/api/*": {"origins": origins}},
   headers=['Content-Type', 'Authorization'], 
@@ -105,12 +106,26 @@ def rollbar_test():
 
 @app.route("/api/message_groups", methods=['GET'])
 def data_message_groups():
-  user_handle  = 'andrewbrown'
-  model = MessageGroups.run(user_handle=user_handle)
-  if model['errors'] is not None:
-    return model['errors'], 422
-  else:
-    return model['data'], 200
+  access_token = CognitoJwtToken.extract_access_token(request.headers)
+
+  try:
+    claims = cognito_token_veri.verify(access_token)
+    app.logger.debug('authenticated')
+    app.logger.debug(claims)
+    cognito_user_id = claims['sub']
+
+    model = MessageGroups.run(cognito_user_id=cognito_user_id)
+    if model['errors'] is not None:
+      return model['errors'], 422
+    else:
+      return model['data'], 200
+      
+  except TokenVerifyError as e:
+    _ = request.data
+    app.logger.info(e)
+    return {}, 401
+
+  
 
 @app.route("/api/messages/@<string:handle>", methods=['GET'])
 def data_messages(handle):

@@ -1,11 +1,10 @@
-import './MessageGroupsPage.css';
+import "./MessageGroupsPage.css";
 import React from "react";
 
-import DesktopNavigation  from '../components/DesktopNavigation';
-import MessageGroupFeed from '../components/MessageGroupFeed';
+import DesktopNavigation from "../components/DesktopNavigation";
+import MessageGroupFeed from "../components/MessageGroupFeed";
 
-// [TODO] Authenication
-import Cookies from 'js-cookie'
+import { fetchAuthSession } from "aws-amplify/auth";
 
 export default function MessageGroupsPage() {
   const [messageGroups, setMessageGroups] = React.useState([]);
@@ -15,48 +14,53 @@ export default function MessageGroupsPage() {
 
   const loadData = async () => {
     try {
-      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/message_groups`
+      const { tokens } = await fetchAuthSession();
+      if(!tokens) throw new Error('No token')
+      const accessToken = tokens.accessToken.toString();
+      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/message_groups`;
       const res = await fetch(backend_url, {
-        method: "GET"
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
       let resJson = await res.json();
       if (res.status === 200) {
-        setMessageGroups(resJson)
+        setMessageGroups(resJson);
       } else {
-        console.log(res)
+        console.log(res);
       }
     } catch (err) {
       console.log(err);
     }
-  };  
+  };
 
   const checkAuth = async () => {
-    console.log('checkAuth')
+    console.log("checkAuth");
     // [TODO] Authenication
-    if (Cookies.get('user.logged_in')) {
+    if (Cookies.get("user.logged_in")) {
       setUser({
-        display_name: Cookies.get('user.name'),
-        handle: Cookies.get('user.username')
-      })
+        display_name: Cookies.get("user.name"),
+        handle: Cookies.get("user.username"),
+      });
     }
   };
 
-  React.useEffect(()=>{
+  React.useEffect(() => {
     //prevents double call
     if (dataFetchedRef.current) return;
     dataFetchedRef.current = true;
 
     loadData();
     checkAuth();
-  }, [])
+  }, []);
   return (
     <article>
-      <DesktopNavigation user={user} active={'home'} setPopped={setPopped} />
-      <section className='message_groups'>
+      <DesktopNavigation user={user} active={"home"} setPopped={setPopped} />
+      <section className="message_groups">
         <MessageGroupFeed message_groups={messageGroups} />
       </section>
-      <div className='content'>
-      </div>
+      <div className="content"></div>
     </article>
   );
 }

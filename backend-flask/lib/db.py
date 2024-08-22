@@ -23,15 +23,24 @@ class Db:
             template_content = f.read()
         return template_content
 
-    def print_sql(self,sql,title='LOGGER PRINT'):
+    def print_sql(self,sql,title='LOGGER PRINT',params={}):
         cyan ='\033[96m'
         no_color = '\033[0m'
         print(f"{cyan}PRINT----{title}----{no_color}",flush=True)
         print(sql, '\n',flush=True)
+        print(params, '\n',flush=True)
 
     def init_pool(self):
         connection_url = os.getenv("CONNECTION_URL")
         self.pool = ConnectionPool(connection_url) 
+
+    def query_value(self,sql,params={}):
+        self.print_sql(title='value',params=params,sql=sql)
+        with self.pool.connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql,params)
+                json = cur.fetchone()
+                return json[0]
 
     def query_commit(self,sql,params={},verbose=True):
         if verbose:
