@@ -18,6 +18,7 @@ export default function MessageGroupPage() {
   const params = useParams();
 
   const loadUserShortData = async () => {
+    if (!params.handle) return;
     try {
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/users/@${params.handle}/short`;
       const res = await fetch(backend_url, {
