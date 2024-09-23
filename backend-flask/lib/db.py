@@ -84,7 +84,7 @@ class Db:
                     self.print_sql('JSON is None','Error')
                 else:
                     self.print_sql(json[0],'JSON RETUNED') 
-
+                print(json,flush=True)
         return json[0]
 
     def query_wrap_object(self,template):

@@ -5,8 +5,10 @@ import DesktopNavigation from "../components/DesktopNavigation";
 import MessageGroupFeed from "../components/MessageGroupFeed";
 
 import { fetchAuthSession } from "aws-amplify/auth";
+import { setAuthUser } from "../lib/checkAuth";
 
 export default function MessageGroupsPage() {
+  const [otherUser, setOtherUser] = React.useState();
   const [messageGroups, setMessageGroups] = React.useState([]);
   const [popped, setPopped] = React.useState([]);
   const [user, setUser] = React.useState(null);
@@ -15,6 +17,7 @@ export default function MessageGroupsPage() {
   const loadData = async () => {
     try {
       const { tokens } = await fetchAuthSession();
+      console.log(tokens)
       if(!tokens) throw new Error('No token')
       const accessToken = tokens.accessToken.toString();
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/message_groups`;
@@ -53,6 +56,7 @@ export default function MessageGroupsPage() {
 
     loadData();
     checkAuth();
+    setAuthUser(setUser)
   }, []);
   return (
     <article>

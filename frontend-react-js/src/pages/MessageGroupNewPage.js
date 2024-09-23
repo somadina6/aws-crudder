@@ -9,7 +9,7 @@ import MessagesForm from "../components/MessageForm";
 import checkAuth, { setAuthUser } from "../lib/checkAuth";
 
 export default function MessageGroupPage() {
-  const [otherUser, setOtherUser] = React.useState();
+  const [otherUser, setOtherUser] = React.useState([]);
   const [messageGroups, setMessageGroups] = React.useState([]);
   const [messages, setMessages] = React.useState([]);
   const [popped, setPopped] = React.useState([]);
@@ -19,9 +19,13 @@ export default function MessageGroupPage() {
 
   const loadUserShortData = async () => {
     try {
+      const accessToken = await checkAuth();
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/users/@${params.handle}/short`;
       const res = await fetch(backend_url, {
         method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
       let resJson = await res.json();
       if (res.status === 200) {
@@ -37,32 +41,8 @@ export default function MessageGroupPage() {
 
   const loadMessageGroupsData = async () => {
     try {
-      const accessToken = await checkAuth();
-      console.log("accessToken\n", accessToken);
-
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/message_groups`;
-      const res = await fetch(backend_url, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        method: "GET",
-      });
-      let resJson = await res.json();
-      if (res.status === 200) {
-        console.log("resJson", resJson);
-        setMessageGroups(resJson); // set when recieved
-      } else {
-        console.log(res);
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const loadMessageGroupData = async () => {
-    try {
       const accessToken = await checkAuth();
-      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/messages/${params.message_group_uuid}`;
       const res = await fetch(backend_url, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -71,7 +51,7 @@ export default function MessageGroupPage() {
       });
       let resJson = await res.json();
       if (res.status === 200) {
-        setMessages(resJson);
+        setMessageGroups(resJson);
       } else {
         console.log(res);
       }
@@ -86,7 +66,6 @@ export default function MessageGroupPage() {
     dataFetchedRef.current = true;
 
     loadMessageGroupsData();
-    loadMessageGroupData();
     loadUserShortData();
     checkAuth();
     setAuthUser(setUser);

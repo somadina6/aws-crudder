@@ -15,6 +15,7 @@ from services.message_groups import *
 from services.messages import *
 from services.create_message import *
 from services.show_activity import *
+from services.users_short import *
 
 # HoneyComb ------------------------------
 from opentelemetry import trace
@@ -127,12 +128,13 @@ def data_message_groups():
 
   
 
-@app.route("/api/messages/@<string:message_group_uuid>", methods=['GET'])
+@app.route("/api/messages/<string:message_group_uuid>", methods=['GET'])
 def data_messages(message_group_uuid):
   
-  access_token = CognitoJwtToken.extract_access_token(request.headers)
 
   try:
+    access_token = CognitoJwtToken.extract_access_token(request.headers)
+    
     claims = cognito_token_veri.verify(access_token)
     app.logger.debug('authenticated')
     cognito_user_id = claims['sub']
@@ -155,16 +157,47 @@ def data_messages(message_group_uuid):
 @app.route("/api/messages", methods=['POST','OPTIONS'])
 @cross_origin()
 def data_create_message():
-  print(request.json,flush=True)
-  user_sender_handle = 'andrewbrown'
-  user_receiver_handle = request.json['user_receiver_handle']
+  # extract user details from request body
+  user_receiver_handle = request.json.get('handle', None)
+  message_group_uuid = request.json.get('message_group_uuid',None)
   message = request.json['message']
 
-  model = CreateMessage.run(message=message,user_sender_handle=user_sender_handle,user_receiver_handle=user_receiver_handle)
-  if model['errors'] is not None:
-    return model['errors'], 422
-  else:
-    return model['data'], 200
+  try:
+    # extract token from request header and verify 
+    access_token = CognitoJwtToken.extract_access_token(request.headers)
+    claims = cognito_token_veri.verify(access_token)
+    cognito_user_id = claims['sub']
+
+    # initialize create message method
+    if message_group_uuid == None:
+      # Create for the first time
+      model = CreateMessage.run(
+        mode="create",
+        message=message,
+        cognito_user_id=cognito_user_id,
+        user_receiver_handle=user_receiver_handle
+      )
+    else:
+      # Push onto existing Message Group
+      model = CreateMessage.run(
+        mode="update",
+        message=message,
+        message_group_uuid=message_group_uuid,
+        cognito_user_id=cognito_user_id
+      )
+
+    if model['errors'] is not None:
+      return model['errors'], 422
+    elif model['data'] is not None:
+      return model['data'], 200
+    else:
+      return {}, 201
+
+  except TokenVerifyError as e:
+    _ = request.data
+    app.logger.info(e)
+    return {}, 401
+    
   
 
 # Home Activities Endpoint
@@ -254,7 +287,11 @@ def data_activities_reply(activity_uuid):
     return model['errors'], 422
   else:
     return model['data'], 200
-  
+
+@app.route("/api/users/@<string:handle>/short", methods=['GET'])
+def data_users_short(handle):
+  data = UsersShort.run(handle)
+  return data, 200
 
 if __name__ == "__main__":
   app.run(debug=True)
